@@ -54,7 +54,7 @@ class GNOMEI18nTarget:
         self.category_id = None
 
         self.module_id = None
-        self.module_branch = None       
+        self.module_branch = None
 
         self.domain = None
         self.document = None
@@ -246,13 +246,16 @@ class GNOMEI18nManage:
             opts, args = getopt.getopt(cmdargs, 'hl:r:su:v', [
                 'help', 'language=',
                 'release=', 'status',
-                'verbose', 'username=' ])
+                'verbose', 'username=', 'list' ])
         except getopt.GetoptError, err:
             print 'Error: %s' % str(err)
             self.usage()
             sys.exit(0)
 
         for o, a in opts:
+            if o in ('--list'):
+                self.display_config()
+                sys.exit()
             if o in ('-h', '--help'):
                 self.usage()
                 sys.exit()
@@ -711,7 +714,7 @@ class GNOMEI18nManage:
     def get_po_file_data(self, pofile):
         if not self.gnome_release_data:
             self.parse_gnome_release_data()
-        
+
         if self.gnome_release_data['release'] != self.release:
             print "Mismatched release data", self.release, self.gnome_release_data['release']
         if self.gnome_release_data['language'] != self.language:
@@ -726,7 +729,7 @@ class GNOMEI18nManage:
                     if pofile == resource['pofile'].rsplit('/')[-1]:
                         return resource['vcspath']
         return None
-        
+
     def is_empty(self):
         for dir in [self.dir_po]:
             dircontents = dircache.listdir(dir)
@@ -768,7 +771,7 @@ class GNOMEI18nManage:
                         os.remove(dir + item)
                     else:
                         print 'Would remove file', dir + item
-                        
+
 
     def init(self): 
         if self.opt_dryrun:
@@ -797,13 +800,13 @@ class GNOMEI18nManage:
         except OSError:
             print 'Could not open file ', filename, '. Aborting...'
             sys.exit(-1)
-    
+
         contents = ''.join(xmlfile.readlines())
-        
+
         mytarget = GNOMEI18nTarget()
         parser = etree.XMLParser(target = mytarget)
         result = etree.XML(contents, parser)
-    
+
         return mytarget.get_stats()
 
     def usage(self):
@@ -936,8 +939,6 @@ class GNOMEI18nManage:
             try:
                 self.language = config.get('Intltool-Manage-VCS', 'language')
                 self.username = config.get('Intltool-Manage-VCS', 'username')
-                #self.dir_po = os.path.join(self.data_dir, self.release, 'po/')
-                #self.dir_vcs = os.path.join(self.data_dir, self.release, 'vcs/')
             except ConfigParser.NoOptionError, err:
                 if not self.action_config:
                     print 'Error:', str(err)
@@ -952,5 +953,20 @@ class GNOMEI18nManage:
         dir_vcs = os.path.join(self.data_dir, release, 'vcs/')
 
         return dir_po, dir_vcs
+
+    def get_available_releases(self):
+        releases = dircache.listdir(self.data_dir)
+
+        return releases
+
+    def display_config(self):
+        # Show configured releases
+        releases = self.get_available_releases()
+        if not releases:
+            print "Could not find any configured release."
+        else:
+            print "The following configured releases were found:"
+            for release in releases:
+                print "* %s" % release
 
 start = GNOMEI18nManage(sys.argv)
