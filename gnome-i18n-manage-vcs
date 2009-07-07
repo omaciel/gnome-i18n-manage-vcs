@@ -670,7 +670,7 @@ class GNOMEI18nManage:
 
     def show_status(self, cmdargs):
         if not cmdargs:
-            self.usage()
+            self.usage('help')
             sys.exit(0)
 
         try:
@@ -978,6 +978,7 @@ class GNOMEI18nManage:
         else:
             print "The configuration file %s was not found!" % self.conf_file
             sys.exit(10)
+
     def get_release_config(self, release):
         dir_po = os.path.join(self.data_dir, release, 'po/')
         dir_vcs = os.path.join(self.data_dir, release, 'vcs/')
