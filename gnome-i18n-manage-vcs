@@ -378,7 +378,7 @@ class GNOMEI18nManage:
                 'help', 'module=', 'transtype=', 'verbose' ])
         except getopt.GetoptError, err:
             print 'Error', err
-            self.usage()
+            self.usage('poget')
             sys.exit(0)
 
         for o, a in opts:
@@ -391,7 +391,7 @@ class GNOMEI18nManage:
             if o in ('--dryrun', '--dry-run'):
                 self.opt_dryrun = True
             if o in ('-h', '--help'):
-                self.usage()
+                self.usage('poget')
                 sys.exit()
             if o in ('-m', '--module'):
                 self.module = a
@@ -477,7 +477,7 @@ class GNOMEI18nManage:
                         'vcsupdate', 'vcs-update' ])
         except getopt.GetoptError, err:
             print 'Error', err
-            self.usage()
+            self.usage('vcsmanage')
             sys.exit(0)
         for o, a in opts:
             if o in ('--clean'):
@@ -549,7 +549,7 @@ class GNOMEI18nManage:
                         else:
                             vcspath = 'ssh://' + self.username + '@' + 'git.gnome.org/git/' + mod
                         branch = self.gnome_release_data['categories'][cat][mod]['branch']
-    
+
                         CMD1 = 'cd ' + self.dir_vcs + ';'
                         if self.opt_gitverbose:
                             if self.opt_nocheckout:
@@ -652,7 +652,7 @@ class GNOMEI18nManage:
                     'help', 'verbose' ])
         except getopt.GetoptError, err:
             print 'Error', err
-            self.usage()
+            self.usage('pocommit')
             sys.exit(0)
         for o, a in opts:
             if o in ('--commit'):
@@ -670,14 +670,14 @@ class GNOMEI18nManage:
 
     def show_status(self, cmdargs):
         if not cmdargs:
-            self.usage('help')
+            self.usage('status')
             sys.exit(0)
 
         try:
             opts, args = getopt.getopt(cmdargs, 'r:', ['release=',])
         except getopt.GetoptError, err:
             print 'Error: %s' % str(err)
-            self.usage()
+            self.usage('status')
             sys.exit(0)
 
         for o, a in opts:
