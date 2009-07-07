@@ -28,6 +28,76 @@ from datetime import datetime   # datetime()
 
 from xdg.BaseDirectory import *
 
+# Help text messages
+#TODO: Is there a better way to do this?
+
+generic_help = """
+Please specify action
+Available actions are:
+\t* config       configures the local settings
+\t* status       show detailed status
+\t* vcsmanage    repository management tasks
+\t* poget        retrieval of PO files
+\t* pocommit     commiting PO files
+
+Exiting...
+"""
+
+pocommit_help = """
+\tpocommit    Commit and push the translation work to the repositories
+\t\t\t            --commit            commit changes in repositories
+\t\t-d     --dry-run           do not really checkout/commit
+
+\tModule filtering
+\t\t-c CAT --category CAT      i18n category name CAT (such as 'desktop')
+\t\t-m MOD --module MOD        i18n module name MOD (such as 'gnome-games')
+\t\t-t     --transtype TYPE    optionally specify translation type, either ui or doc
+
+\tCommon options
+\t\t-d     --dry-run           do not really perform the action
+\t\t-h     --help              this craft
+\t\t-v     --verbose           show verbose output
+"""
+
+poget_help = """
+\tpoget       Retrieve a selection of PO files (Module filtering applies)
+\t\t-r REL  --release REL       release REL (such as 'gnome-2-26')
+\t\t\t--clean             clears up the downloaded files (USE WITH CARE, WIPES PO FILES)
+"""
+
+vcsmanage_help = """
+\tvcsmanage   Local repository management (Module filtering applies)
+\t\t\t--clean             clears up the downloaded files (USE WITH CARE, WIPES REPOSITORIES)
+\t\t\t--clone             clone repositories
+\t\t\t--eponymous         make repositories eponymous (sets to new 'username')
+\t\t\t--gitverbose        show progress when cloning (git 1.5 ignores this option).
+\t\t-r      --reset             reset each repository (git reset --hard origin/master)
+\t\t\t--trim                      erases the working copy
+\t\t\t--update-vcs                update local repositories (runs git pull --rebase on each)
+"""
+
+status_help = """
+\tstatus      Show current status for a previously configured release.
+\t\t-r REL --release REL       release REL (such as 'gnome-2-26')
+"""
+
+config_help = """
+\tconfig      Initial configuration (stored in ~/.gnomemanagevcsrc)
+\t\t-l LL  --language LL       language code per ISO 639
+\t\t-r REL --release REL       release REL (such as 'gnome-2-26')
+\t\t-u USR --username USR      username USR (corresponds to SVN/GIT GNOME account)
+"""
+
+help_messages = {
+    'config': config_help,
+    'pocommit': pocommit_help,
+    'poget': poget_help,
+    'vcsmanage': vcsmanage_help,
+    'status': status_help,
+    'config': config_help,
+    'help': generic_help,
+}
+
 try:
     from lxml import etree  # etree.XMLParser(), etree.XML()
 except ImportError, err:
@@ -213,15 +283,7 @@ class GNOMEI18nManage:
         elif argv[1] == 'pocommit':
             self.action_pocommit = True
         else:
-            print 'Please specify action'
-            print 'Available actions are:'
-            print ' * config       configures the local settings'
-            print ' * status       show detailed status'
-            print ' * vcsmanage    repository management tasks'
-            print ' * poget        retrieval of PO files'
-            print ' * pocommit     commiting PO files'
-            print 
-            print 'Exiting...'
+            self.usage()
             sys.exit(11)
 
         self.readconfig()
@@ -239,7 +301,7 @@ class GNOMEI18nManage:
 
     def process_config(self, cmdargs):
         if not cmdargs:
-            self.usage()
+            self.usage('config')
             sys.exit(0)
 
         try:
@@ -809,45 +871,13 @@ class GNOMEI18nManage:
 
         return mytarget.get_stats()
 
-    def usage(self):
+    def usage(self, section='help'):
+        help_message = help_messages[section]
+
         print PROGNAME, 'a tool that helps manage translation files from a VCS'
         print 'Usage:', PROGNAME, '<action> <options>'
-        print """Available actions:
- config      Initial configuration (stored in ~/.gnomemanagevcsrc)
-    -l LL  --language LL       language code per ISO 639
-    -r REL --release REL       release REL (such as 'gnome-2-26')
-    -u USR --username USR      username USR (corresponds to SVN/GIT GNOME account)
-
- status      Show current status for a previously configured release.
-    -r REL --release REL       release REL (such as 'gnome-2-26')
-
- vcsmanage   Local repository management (Module filtering applies)
-            --clean             clears up the downloaded files (USE WITH CARE, WIPES REPOSITORIES)
-            --clone             clone repositories
-            --eponymous         make repositories eponymous (sets to new 'username')
-            --gitverbose        show progress when cloning (git 1.5 ignores this option).
-    -r      --reset             reset each repository (git reset --hard origin/master)
-    --trim                      erases the working copy
-    --update-vcs                update local repositories (runs git pull --rebase on each)
-
- poget       Retrieve a selection of PO files (Module filtering applies)
-    -r REL  --release REL       release REL (such as 'gnome-2-26')
-            --clean             clears up the downloaded files (USE WITH CARE, WIPES PO FILES)
-
- pocommit    Commit and push the translation work to the repositories
-            --commit            commit changes in repositories
-     -d     --dry-run           do not really checkout/commit
-
- Module filtering
-     -c CAT --category CAT      i18n category name CAT (such as 'desktop')
-     -m MOD --module MOD        i18n module name MOD (such as 'gnome-games')
-     -t     --transtype TYPE    optionally specify translation type, either ui or doc
-
- Common options
-     -d     --dry-run           do not really perform the action
-     -h     --help              this craft
-     -v     --verbose           show verbose output
-"""
+        print "Available actions:"
+        print help_message
 
     def download_hook(self, blocks_transferred, block_size, file_size):
         """ A download hook to provide some feedback when downloading """
